@@ -13,12 +13,21 @@ static uint32_t s_lump_height = PBL_DISPLAY_WIDTH/4;
 
 static uint32_t s_outer_lump_height = 16; // must be less than s_inset_size
 
-static uint8_t s_hour_mark_width = 3;
-static uint8_t s_minute_mark_width = 1;
+typedef struct AppSettings {
+  GColor color_bg;
+  GColor color_hour;
+  GColor color_minute;
+  uint8_t width_hour;
+  uint8_t width_minute;
+} AppSettings;
 
-static GColor s_color_minute = GColorWhite;
-static GColor s_color_bg = GColorBlack;
-static GColor s_color_hour = GColorRed;
+static AppSettings s_settings = {
+  GColorBlack,
+  PBL_IF_BW_ELSE(GColorWhite, GColorRed),
+  GColorWhite,
+  3,
+  1
+};
 
 typedef struct LineSegment {
   GPoint p0;
@@ -110,8 +119,8 @@ static void update_graphics_layer(Layer *graphics_layer, GContext *ctx) {
   for(int32_t m = 0; m < 60; m++) {
     LineSegment segment = get_minute_segment(bounds, m);
 
-    graphics_context_set_stroke_width(ctx, m % 5 ? s_minute_mark_width : s_hour_mark_width);
-    graphics_context_set_stroke_color(ctx, m % 5 ? s_color_minute : s_color_hour);
+    graphics_context_set_stroke_width(ctx, m % 5 ? s_settings.width_minute : s_settings.width_hour);
+    graphics_context_set_stroke_color(ctx, m % 5 ? s_settings.color_minute : s_settings.color_hour);
 
     graphics_draw_line(ctx, segment.p0, segment.p1);
   }
@@ -231,20 +240,56 @@ static void window_unload(Window *window) {
   layer_destroy(s_graphics_layer);
 }
 
+static void on_inbox_received(DictionaryIterator *iter, void *context) {
+  Tuple* tuple = dict_read_first(iter);
+  while(tuple) {
+    if(tuple->key == MESSAGE_KEY_COLOR_BG) {
+      s_settings.color_bg = GColorFromHEX(tuple->value->int32);
+      window_set_background_color(s_window, s_settings.color_bg);
+    } else if(tuple->key == MESSAGE_KEY_COLOR_MINUTE) {
+      s_settings.color_minute = GColorFromHEX(tuple->value->int32);
+    } else if(tuple->key == MESSAGE_KEY_COLOR_HOUR) {
+      s_settings.color_hour = GColorFromHEX(tuple->value->int32);
+    } else if(tuple->key == MESSAGE_KEY_STROKE_WIDTH_MINUTE) {
+      s_settings.width_minute = tuple->value->uint8;
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "hour width is %d", tuple->value->uint8);
+    } else if(tuple->key == MESSAGE_KEY_STROKE_WIDTH_HOUR) {
+      s_settings.width_hour = tuple->value->uint8;
+    } else {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Received unknown key %d", tuple->key);
+    }
+    tuple = dict_read_next(iter);
+  }
+  layer_mark_dirty(s_graphics_layer);
+  persist_write_data(0, &s_settings, sizeof(AppSettings));
+}
+
+static void on_inbox_dropped(AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped: %d", reason);
+}
+
 int main(void) {
   time_t temp = time(NULL);
   struct tm *current_time = localtime(&temp);
   s_minute_angle = get_minute_angle(current_time);
   s_hour_angle = get_hour_angle(current_time);
+  
+  if(persist_exists(0)) {
+    persist_read_data(0, &s_settings, sizeof(AppSettings));
+  }
 
   s_window = window_create();
   window_set_window_handlers(s_window, (WindowHandlers) {
     .load = window_load,
     .unload = window_unload,
   });
-  window_set_background_color(s_window, s_color_bg);
+  window_set_background_color(s_window, s_settings.color_bg);
 
   window_stack_push(s_window, /* animated */ false);
+  
+  app_message_register_inbox_received(on_inbox_received);
+  app_message_register_inbox_dropped(on_inbox_dropped);
+  app_message_open(128, 128);
 
   app_event_loop();
 

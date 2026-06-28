@@ -1,32 +1,40 @@
 {
-  "name": "magnetism",
-  "author": "chris.mondok@gmail.com",
-  "version": "1.0.0",
-  "keywords": ["pebble-app"],
-  "private": true,
-  "dependencies": {},
-  "pebble": {
-    "displayName": "magnetism",
-    "uuid": "6115ce88-b35d-42c1-aad1-84d421765afb",
-    "sdkVersion": "3",
-    "enableMultiJS": true,
-    "targetPlatforms": [
-      "aplite",
-      "basalt",
-      "chalk",
-      "diorite",
-      "emery",
-      "flint",
-      "gabbro"
-    ],
-    "watchapp": {
-      "watchface": true
+    "author": "chris.mondok@gmail.com",
+    "dependencies": {
+        "@rebble/clay": "^1.0.10"
     },
-    "messageKeys": [
-      "dummy"
+    "keywords": [
+        "pebble-app"
     ],
-    "resources": {
-      "media": []
-    }
-  }
+    "name": "magnetism",
+    "pebble": {
+        "displayName": "magnetism",
+        "enableMultiJS": true,
+        "messageKeys": [
+            "COLOR_MINUTE",
+            "COLOR_HOUR",
+            "COLOR_BG",
+            "STROKE_WIDTH_HOUR",
+            "STROKE_WIDTH_MINUTE"
+        ],
+        "projectType": "native",
+        "resources": {
+            "media": []
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "chalk",
+            "diorite",
+            "emery",
+            "gabbro",
+            "flint"
+        ],
+        "uuid": "6115ce88-b35d-42c1-aad1-84d421765afb",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "1.0.0"
 }
