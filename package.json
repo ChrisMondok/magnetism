@@ -8,7 +8,7 @@
     ],
     "name": "magnetism",
     "pebble": {
-        "displayName": "magnetism",
+        "displayName": "Magnetism",
         "enableMultiJS": true,
         "messageKeys": [
             "COLOR_MINUTE",
@@ -19,7 +19,15 @@
         ],
         "projectType": "native",
         "resources": {
-            "media": []
+            "media": [
+                {
+                    "file": "images/icon",
+                    "menuIcon": true,
+                    "name": "IMAGE_ICON",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                }
+            ]
         },
         "sdkVersion": "3",
         "targetPlatforms": [
