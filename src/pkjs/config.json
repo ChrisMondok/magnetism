@@ -16,13 +16,13 @@
         "type": "color",
         "label": "Minute color",
         "messageKey": "COLOR_MINUTE",
-        "defaultValue": "ff0000"
+        "defaultValue": "ffffff"
       },
       {
         "type": "color",
         "label": "Hour color",
         "messageKey": "COLOR_HOUR",
-        "defaultValue": "ffffff"
+        "defaultValue": "ff0000"
       }
     ]
   },
